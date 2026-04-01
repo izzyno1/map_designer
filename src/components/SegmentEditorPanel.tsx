@@ -1,3 +1,4 @@
+import { useParams } from "react-router-dom";
 import type { SelectedAnnotation, Segment } from "../types/annotation";
 
 interface SegmentEditorPanelProps {
@@ -28,6 +29,7 @@ export function SegmentEditorPanel({
   onSelect,
   onChange,
 }: SegmentEditorPanelProps) {
+  const { routeId = "" } = useParams();
   const selectedSegment =
     selected.kind === "segment"
       ? segments.find((item) => item.id === selected.id) ?? null
@@ -45,7 +47,7 @@ export function SegmentEditorPanel({
         onClick={() => {
           const next: Segment = {
             id: crypto.randomUUID(),
-            routeId: segments[0]?.routeId ?? "",
+            routeId: segments[0]?.routeId ?? routeId,
             name: "新赛段",
             type: "tempo",
             effort: "",

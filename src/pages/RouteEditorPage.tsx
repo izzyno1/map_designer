@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AnnotationSidebar } from "../components/AnnotationSidebar";
 import { AppShell } from "../components/AppShell";
@@ -13,10 +13,19 @@ export function RouteEditorPage() {
   const { routeId = "" } = useParams();
   const editor = useRouteEditorData(routeId);
   const [geometryDraft, setGeometryDraft] = useState<RouteGeometry | null>(null);
+  const previousRouteIdRef = useRef(routeId);
 
   useEffect(() => {
-    setGeometryDraft(editor.mapData?.geometry ?? null);
-  }, [editor.mapData]);
+    if (previousRouteIdRef.current !== routeId) {
+      previousRouteIdRef.current = routeId;
+      setGeometryDraft(null);
+      return;
+    }
+
+    if (geometryDraft === null && editor.mapData?.geometry) {
+      setGeometryDraft(editor.mapData.geometry);
+    }
+  }, [routeId, editor.mapData, geometryDraft]);
 
   return (
     <AppShell title={editor.route?.name ?? "路线编辑器"} subtitle="左侧列表，中间地图，右侧属性编辑">
