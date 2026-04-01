@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { MapContainer, Marker, Polyline, TileLayer, useMapEvents } from "react-leaflet";
+import { useEffect, useMemo } from "react";
+import { MapContainer, Marker, Polyline, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import type { Segment, SelectedAnnotation } from "../types/annotation";
 import type { Poi, RouteGeometry } from "../types/route";
@@ -26,6 +26,16 @@ function ClickCapture({ onMapClick }: { onMapClick: (lat: number, lng: number) =
       onMapClick(event.latlng.lat, event.latlng.lng);
     },
   });
+
+  return null;
+}
+
+function ViewportSync({ center, zoom }: { center: [number, number]; zoom: number }) {
+  const map = useMap();
+
+  useEffect(() => {
+    map.setView(center, zoom, { animate: false });
+  }, [center, map, zoom]);
 
   return null;
 }
@@ -63,14 +73,17 @@ export function MapCanvas({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <ViewportSync center={fallback.center} zoom={fallback.zoom} />
         <ClickCapture onMapClick={onMapClick} />
         {tuples.length > 1 ? <Polyline positions={tuples} pathOptions={{ color: "#1f6feb", weight: 5 }} /> : null}
         {highlightedSegment.length > 1 ? (
           <Polyline
             positions={highlightedSegment}
             pathOptions={{ color: "#f76707", weight: 7 }}
+            bubblingMouseEvents={false}
             eventHandlers={{
-              click: () => {
+              click: (event) => {
+                event.originalEvent?.stopPropagation();
                 if (selected.kind === "segment") onSegmentClick(selected.id);
               },
             }}
