@@ -4,6 +4,8 @@ import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import App from "./App";
 
+void React;
+
 describe("app shell", () => {
   it("renders the placeholder route content", () => {
     const router = createMemoryRouter(
