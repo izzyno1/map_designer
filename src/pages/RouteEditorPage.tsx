@@ -16,7 +16,7 @@ export function RouteEditorPage() {
 
   useEffect(() => {
     setGeometryDraft(editor.mapData?.geometry ?? null);
-  }, [editor.mapData?.geometry]);
+  }, [editor.mapData]);
 
   return (
     <AppShell title={editor.route?.name ?? "路线编辑器"} subtitle="左侧列表，中间地图，右侧属性编辑">
@@ -45,13 +45,13 @@ export function RouteEditorPage() {
               地图画布将在下个任务中接入 Leaflet。
             </div>
             <div className="editor-panel-stack">
-              <PoiEditorPanel
-                selected={editor.selected}
-                selectedPoi={editor.selectedPoi}
-                draftPoi={editor.draftPoi}
-                onChange={(next) => editor.setDraftPoi(next)}
-                onSave={editor.savePoiDraft}
-              />
+            <PoiEditorPanel
+              selected={editor.selected}
+              selectedPoi={editor.selectedPoi}
+              draftPoi={editor.draftPoi}
+              onChange={editor.setDraftPoi}
+              onSave={editor.savePoiDraft}
+            />
               <SegmentEditorPanel
                 selected={editor.selected}
                 segments={editor.segments}
