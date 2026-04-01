@@ -39,6 +39,6 @@ describe("RouteEditorPage", () => {
 
     expect(await screen.findByText("标注列表")).toBeInTheDocument();
     expect(screen.getByText("赛段")).toBeInTheDocument();
-    expect(screen.getByText("Geometry")).toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { name: "Geometry" })).toHaveLength(2);
   });
 });

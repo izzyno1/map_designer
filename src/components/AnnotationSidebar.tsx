@@ -81,7 +81,7 @@ export function AnnotationSidebar({
 
       <section className="editor-sidebar__section">
         <div className="editor-sidebar__section-header">
-          <h3>Geometry 列表</h3>
+          <h3>Geometry</h3>
         </div>
         <button
           type="button"

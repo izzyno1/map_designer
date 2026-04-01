@@ -18,21 +18,6 @@ export function RouteEditorPage() {
     setGeometryDraft(editor.mapData?.geometry ?? null);
   }, [editor.mapData?.geometry]);
 
-  const activeGeometry = geometryDraft ?? editor.mapData?.geometry ?? null;
-
-  if (editor.loading) {
-    return (
-      <AppShell
-        title={editor.route?.name ?? "路线编辑器"}
-        subtitle="左侧列表，中间地图，右侧属性编辑"
-      >
-        <div className="editor-page">
-          <div className="panel">正在加载路线编辑器...</div>
-        </div>
-      </AppShell>
-    );
-  }
-
   return (
     <AppShell title={editor.route?.name ?? "路线编辑器"} subtitle="左侧列表，中间地图，右侧属性编辑">
       <div className="editor-page">
@@ -42,41 +27,45 @@ export function RouteEditorPage() {
           </StatusBanner>
           {editor.message ? <StatusBanner tone="neutral">{editor.message}</StatusBanner> : null}
         </div>
-        <section className="editor-layout">
-          <AnnotationSidebar
-            routeName={editor.route?.name}
-            routeDescription={editor.route?.description}
-            pois={editor.mapData?.pois ?? []}
-            segments={editor.segments}
-            selected={editor.selected}
-            onSelectPoi={editor.selectPoi}
-            onSelectSegment={editor.selectSegment}
-            onSelectGeometry={editor.selectGeometry}
-          />
-          <div className="panel editor-map-placeholder">
-            地图画布将在下个任务中接入 Leaflet。
-          </div>
-          <div className="editor-panel-stack">
-            <PoiEditorPanel
-              selected={editor.selected}
-              selectedPoi={editor.selectedPoi}
-              draftPoi={editor.draftPoi}
-              onChange={(next) => editor.setDraftPoi(next)}
-              onSave={editor.savePoiDraft}
-            />
-            <SegmentEditorPanel
-              selected={editor.selected}
+        {editor.loading ? (
+          <div className="panel">正在加载路线编辑器...</div>
+        ) : (
+          <section className="editor-layout">
+            <AnnotationSidebar
+              routeName={editor.route?.name}
+              routeDescription={editor.route?.description}
+              pois={editor.mapData?.pois ?? []}
               segments={editor.segments}
-              onSelect={editor.selectSegment}
-              onChange={editor.saveSegmentList}
+              selected={editor.selected}
+              onSelectPoi={editor.selectPoi}
+              onSelectSegment={editor.selectSegment}
+              onSelectGeometry={editor.selectGeometry}
             />
-            <GeometryEditorPanel
-              geometry={activeGeometry}
-              onChange={setGeometryDraft}
-              onSave={editor.saveGeometry}
-            />
-          </div>
-        </section>
+            <div className="panel editor-map-placeholder">
+              地图画布将在下个任务中接入 Leaflet。
+            </div>
+            <div className="editor-panel-stack">
+              <PoiEditorPanel
+                selected={editor.selected}
+                selectedPoi={editor.selectedPoi}
+                draftPoi={editor.draftPoi}
+                onChange={(next) => editor.setDraftPoi(next)}
+                onSave={editor.savePoiDraft}
+              />
+              <SegmentEditorPanel
+                selected={editor.selected}
+                segments={editor.segments}
+                onSelect={editor.selectSegment}
+                onChange={editor.saveSegmentList}
+              />
+              <GeometryEditorPanel
+                geometry={geometryDraft}
+                onChange={setGeometryDraft}
+                onSave={editor.saveGeometry}
+              />
+            </div>
+          </section>
+        )}
       </div>
     </AppShell>
   );
