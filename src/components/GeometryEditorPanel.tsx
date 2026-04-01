@@ -25,7 +25,7 @@ export function GeometryEditorPanel({ geometry, onChange, onSave }: GeometryEdit
       <h2>Geometry</h2>
       <div className="geometry-list">
         {geometry.coordinates.map((point, index) => (
-          <div key={`${index}-${point.lat}-${point.lng}`} className="geometry-row">
+          <div key={`${index}-${point.lat}-${point.lng}`} className="geometry-row geometry-row--wide">
             <div>{index}</div>
             <input
               type="number"
@@ -47,6 +47,31 @@ export function GeometryEditorPanel({ geometry, onChange, onSave }: GeometryEdit
                 onChange(next);
               }}
             />
+            <button
+              type="button"
+              onClick={() => {
+                const next = structuredClone(geometry);
+                next.coordinates.splice(index + 1, 0, {
+                  lat: point.lat + 0.002,
+                  lng: point.lng + 0.002,
+                  distanceKm: point.distanceKm,
+                });
+                onChange(next);
+              }}
+            >
+              插入
+            </button>
+            <button
+              type="button"
+              disabled={geometry.coordinates.length <= 2}
+              onClick={() => {
+                const next = structuredClone(geometry);
+                next.coordinates.splice(index, 1);
+                onChange(next);
+              }}
+            >
+              删除
+            </button>
           </div>
         ))}
       </div>

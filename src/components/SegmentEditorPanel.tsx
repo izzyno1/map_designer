@@ -117,6 +117,78 @@ export function SegmentEditorPanel({
             />
           </label>
           <label>
+            rank
+            <input
+              value={selectedSegment.rank ?? ""}
+              onChange={(event) =>
+                onChange(
+                  upsertNext({
+                    ...selectedSegment,
+                    rank: event.currentTarget.value,
+                  }),
+                )
+              }
+            />
+          </label>
+          <label>
+            best
+            <input
+              value={selectedSegment.best ?? ""}
+              onChange={(event) =>
+                onChange(
+                  upsertNext({
+                    ...selectedSegment,
+                    best: event.currentTarget.value,
+                  }),
+                )
+              }
+            />
+          </label>
+          <label>
+            pr
+            <input
+              value={selectedSegment.pr ?? ""}
+              onChange={(event) =>
+                onChange(
+                  upsertNext({
+                    ...selectedSegment,
+                    pr: event.currentTarget.value,
+                  }),
+                )
+              }
+            />
+          </label>
+          <label>
+            likes
+            <input
+              type="number"
+              value={selectedSegment.likes ?? 0}
+              onChange={(event) =>
+                onChange(
+                  upsertNext({
+                    ...selectedSegment,
+                    likes: toNumber(event.currentTarget.value),
+                  }),
+                )
+              }
+            />
+          </label>
+          <label>
+            riders
+            <input
+              type="number"
+              value={selectedSegment.riders ?? 0}
+              onChange={(event) =>
+                onChange(
+                  upsertNext({
+                    ...selectedSegment,
+                    riders: toNumber(event.currentTarget.value),
+                  }),
+                )
+              }
+            />
+          </label>
+          <label>
             起点索引
             <input
               type="number"

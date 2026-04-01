@@ -260,4 +260,68 @@ describe("RouteEditorPage", () => {
 
     expect(screen.getAllByRole("spinbutton")[0]).toHaveValue(7);
   });
+
+  it("shows the current saving state in the app shell actions", () => {
+    let editorState = {
+      route: {
+        id: "route-1",
+        name: "测试路线",
+        description: "desc",
+        geometry: { type: "LineString" as const, coordinates: [] },
+      },
+      mapData: {
+        routeId: "route-1",
+        geometry: { type: "LineString" as const, coordinates: [] },
+        pois: [],
+      },
+      segments: [],
+      selected: { kind: "none" as const },
+      selectedPoi: null,
+      selectedSegment: null,
+      draftPoi: null,
+      source: "mock" as const,
+      loading: false,
+      saving: false,
+      message: null,
+      setDraftPoi: vi.fn(),
+      setMessage: vi.fn(),
+      setSelected: vi.fn(),
+      savePoiDraft: vi.fn(),
+      saveSegmentList: vi.fn(),
+      saveGeometry: vi.fn(),
+      startCreatePoi: vi.fn(),
+      selectPoi: vi.fn(),
+      selectSegment: vi.fn(),
+      selectGeometry: vi.fn(),
+    } as ReturnType<typeof routeEditorHook.useRouteEditorData>;
+
+    vi.spyOn(routeEditorHook, "useRouteEditorData").mockImplementation(
+      () => editorState,
+    );
+
+    const view = render(
+      <MemoryRouter initialEntries={["/routes/route-1"]}>
+        <Routes>
+          <Route path="/routes/:routeId" element={<RouteEditorPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText("Ready")).toBeInTheDocument();
+
+    editorState = {
+      ...editorState,
+      saving: true,
+    };
+
+    view.rerender(
+      <MemoryRouter initialEntries={["/routes/route-1"]}>
+        <Routes>
+          <Route path="/routes/:routeId" element={<RouteEditorPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText("Saving...")).toBeInTheDocument();
+  });
 });

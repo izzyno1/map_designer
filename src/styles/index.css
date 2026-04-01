@@ -65,6 +65,11 @@ textarea {
   color: var(--muted);
 }
 
+.app-shell__header > div:last-child {
+  display: flex;
+  align-items: flex-start;
+}
+
 .app-shell__crumb {
   color: var(--primary);
   text-decoration: none;
@@ -276,4 +281,17 @@ textarea {
   grid-template-columns: 48px 1fr 1fr;
   gap: 8px;
   align-items: center;
+}
+
+.geometry-row--wide {
+  grid-template-columns: 48px 1fr 1fr auto auto;
+}
+
+.toolbar-chip {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: #17212b;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
 }

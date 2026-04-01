@@ -37,7 +37,11 @@ export function RouteEditorPage() {
   }, [routeId, editor.mapData, geometryDraftState.routeId, geometryDraft]);
 
   return (
-    <AppShell title={editor.route?.name ?? "路线编辑器"} subtitle="左侧列表，中间地图，右侧属性编辑">
+    <AppShell
+      title={editor.route?.name ?? "路线编辑器"}
+      subtitle="左侧列表，中间地图，右侧属性编辑"
+      actions={<div className="toolbar-chip">{editor.saving ? "Saving..." : "Ready"}</div>}
+    >
       <div className="editor-page">
         <div className="editor-page__status">
           <StatusBanner tone={editor.source === "api" ? "success" : "warning"}>
