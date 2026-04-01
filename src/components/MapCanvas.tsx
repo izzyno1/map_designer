@@ -30,12 +30,20 @@ function ClickCapture({ onMapClick }: { onMapClick: (lat: number, lng: number) =
   return null;
 }
 
-function ViewportSync({ center, zoom }: { center: [number, number]; zoom: number }) {
+function ViewportSync({
+  centerLat,
+  centerLng,
+  zoom,
+}: {
+  centerLat: number;
+  centerLng: number;
+  zoom: number;
+}) {
   const map = useMap();
 
   useEffect(() => {
-    map.setView(center, zoom, { animate: false });
-  }, [center, map, zoom]);
+    map.setView([centerLat, centerLng], zoom, { animate: false });
+  }, [centerLat, centerLng, map, zoom]);
 
   return null;
 }
@@ -53,6 +61,7 @@ export function MapCanvas({
   const points = geometry?.coordinates ?? [];
   const tuples = geometry ? geometryToLatLngTuples(geometry) : [];
   const fallback = buildFallbackView(points);
+  const [centerLat, centerLng] = fallback.center;
 
   const highlightedSegment = useMemo(() => {
     if (selected.kind !== "segment") return [];
@@ -73,7 +82,7 @@ export function MapCanvas({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <ViewportSync center={fallback.center} zoom={fallback.zoom} />
+        <ViewportSync centerLat={centerLat} centerLng={centerLng} zoom={fallback.zoom} />
         <ClickCapture onMapClick={onMapClick} />
         {tuples.length > 1 ? <Polyline positions={tuples} pathOptions={{ color: "#1f6feb", weight: 5 }} /> : null}
         {highlightedSegment.length > 1 ? (
