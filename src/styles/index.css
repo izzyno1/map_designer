@@ -136,3 +136,111 @@ textarea {
   color: var(--muted);
   font-size: 14px;
 }
+
+.editor-page__status {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.editor-layout {
+  display: grid;
+  grid-template-columns: 320px minmax(520px, 1fr) 360px;
+  gap: 16px;
+  align-items: start;
+}
+
+.editor-sidebar {
+  display: grid;
+  gap: 18px;
+}
+
+.editor-sidebar__route h2 {
+  margin: 0 0 6px;
+  font-size: 22px;
+}
+
+.editor-sidebar__route p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.editor-sidebar__section {
+  display: grid;
+  gap: 10px;
+}
+
+.editor-sidebar__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.editor-sidebar__section-header h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.list-item {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel-muted);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.list-item.is-active {
+  border-color: var(--primary);
+  background: #eef5ff;
+  color: var(--primary);
+}
+
+.editor-map-placeholder {
+  min-height: 720px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+.editor-panel-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.form-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.form-panel label {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.form-panel input,
+.form-panel select,
+.form-panel textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text);
+}
+
+.geometry-list {
+  display: grid;
+  gap: 8px;
+}
+
+.geometry-row {
+  display: grid;
+  grid-template-columns: 48px 1fr 1fr;
+  gap: 8px;
+  align-items: center;
+}
