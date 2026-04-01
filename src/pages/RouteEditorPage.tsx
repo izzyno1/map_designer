@@ -8,6 +8,8 @@ import { PoiEditorPanel } from "../components/PoiEditorPanel";
 import { SegmentEditorPanel } from "../components/SegmentEditorPanel";
 import { StatusBanner } from "../components/StatusBanner";
 import { useRouteEditorData } from "../hooks/useRouteEditorData";
+import { applyGeometryEdit } from "../lib/geometry";
+import type { Segment } from "../types/annotation";
 import type { RouteGeometry } from "../types/route";
 
 export function RouteEditorPage() {
@@ -22,6 +24,15 @@ export function RouteEditorPage() {
   });
   const geometryDraft =
     geometryDraftState.routeId === routeId ? geometryDraftState.geometry : null;
+  const [segmentDraftState, setSegmentDraftState] = useState<{
+    routeId: string;
+    segments: Segment[];
+  }>({
+    routeId: "",
+    segments: [],
+  });
+  const segmentDraft =
+    segmentDraftState.routeId === routeId ? segmentDraftState.segments : editor.segments;
 
   useEffect(() => {
     if (editor.mapData?.routeId !== routeId) {
@@ -35,6 +46,52 @@ export function RouteEditorPage() {
       });
     }
   }, [routeId, editor.mapData, geometryDraftState.routeId, geometryDraft]);
+
+  useEffect(() => {
+    if (editor.route?.id !== routeId) {
+      return;
+    }
+
+    if (segmentDraftState.routeId !== routeId) {
+      setSegmentDraftState({
+        routeId,
+        segments: editor.segments,
+      });
+    }
+  }, [routeId, editor.route, editor.segments, segmentDraftState.routeId]);
+
+  function updateGeometryDraft(nextGeometry: RouteGeometry) {
+    const previousGeometry =
+      geometryDraft ?? (editor.mapData?.routeId === routeId ? editor.mapData.geometry : null);
+    const nextSegments =
+      segmentDraftState.routeId === routeId ? segmentDraftState.segments : editor.segments;
+    const appliedEdit = applyGeometryEdit(previousGeometry, nextGeometry, nextSegments);
+
+    setGeometryDraftState({
+      routeId,
+      geometry: appliedEdit.geometry,
+    });
+    setSegmentDraftState({
+      routeId,
+      segments: appliedEdit.segments,
+    });
+  }
+
+  function updateSegmentDraft(nextSegments: Segment[]) {
+    setSegmentDraftState({
+      routeId,
+      segments: nextSegments,
+    });
+    void editor.saveSegmentList(nextSegments);
+  }
+
+  async function saveGeometryDraft(geometry: RouteGeometry) {
+    const nextSegments =
+      segmentDraftState.routeId === routeId ? segmentDraftState.segments : editor.segments;
+
+    await editor.saveSegmentList(nextSegments);
+    await editor.saveGeometry(geometry);
+  }
 
   return (
     <AppShell
@@ -57,7 +114,7 @@ export function RouteEditorPage() {
               routeName={editor.route?.name}
               routeDescription={editor.route?.description}
               pois={editor.mapData?.pois ?? []}
-              segments={editor.segments}
+              segments={segmentDraft}
               selected={editor.selected}
               onSelectPoi={editor.selectPoi}
               onSelectSegment={editor.selectSegment}
@@ -66,17 +123,12 @@ export function RouteEditorPage() {
             <MapCanvas
               geometry={geometryDraft}
               pois={editor.mapData?.pois ?? []}
-              segments={editor.segments}
+              segments={segmentDraft}
               selected={editor.selected}
               onMapClick={editor.startCreatePoi}
               onPoiClick={editor.selectPoi}
               onSegmentClick={editor.selectSegment}
-              onGeometryChange={(next) =>
-                setGeometryDraftState({
-                  routeId,
-                  geometry: next,
-                })
-              }
+              onGeometryChange={updateGeometryDraft}
             />
             <div className="editor-panel-stack">
               <PoiEditorPanel
@@ -88,19 +140,14 @@ export function RouteEditorPage() {
               />
               <SegmentEditorPanel
                 selected={editor.selected}
-                segments={editor.segments}
+                segments={segmentDraft}
                 onSelect={editor.selectSegment}
-                onChange={editor.saveSegmentList}
+                onChange={updateSegmentDraft}
               />
               <GeometryEditorPanel
                 geometry={geometryDraft}
-                onChange={(next) =>
-                  setGeometryDraftState({
-                    routeId,
-                    geometry: next,
-                  })
-                }
-                onSave={editor.saveGeometry}
+                onChange={updateGeometryDraft}
+                onSave={saveGeometryDraft}
               />
             </div>
           </section>

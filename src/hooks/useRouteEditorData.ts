@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPoi, updatePoi } from "../api/pois";
 import {
   getRouteDetail,
@@ -32,6 +32,10 @@ export function useRouteEditorData(routeId: string) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const activeRouteIdRef = useRef(routeId);
+  const saveRequestIdRef = useRef(0);
+
+  activeRouteIdRef.current = routeId;
 
   useEffect(() => {
     if (!routeId) {
@@ -42,6 +46,7 @@ export function useRouteEditorData(routeId: string) {
     let cancelled = false;
 
     setLoading(true);
+    setSaving(false);
     void (async () => {
       try {
         const [routeDetail, routeMapData, nextSegments] = await Promise.all([
@@ -75,6 +80,27 @@ export function useRouteEditorData(routeId: string) {
     };
   }, [routeId]);
 
+  function startRouteSave(requestRouteId: string) {
+    const requestId = saveRequestIdRef.current + 1;
+    saveRequestIdRef.current = requestId;
+    setSaving(true);
+
+    return { requestId, routeId: requestRouteId };
+  }
+
+  function isStaleRouteSave(requestRouteId: string) {
+    return activeRouteIdRef.current !== requestRouteId;
+  }
+
+  function finishRouteSave(requestId: number, requestRouteId: string) {
+    if (
+      activeRouteIdRef.current === requestRouteId &&
+      saveRequestIdRef.current === requestId
+    ) {
+      setSaving(false);
+    }
+  }
+
   const selectedPoi = useMemo(() => {
     if (selected.kind !== "poi") {
       return null;
@@ -96,7 +122,7 @@ export function useRouteEditorData(routeId: string) {
       return;
     }
 
-    setSaving(true);
+    const saveScope = startRouteSave(routeId);
     try {
       const { isNew, ...rest } = input;
       const result = isNew
@@ -112,6 +138,10 @@ export function useRouteEditorData(routeId: string) {
           })
         : await updatePoi(routeId, input.id, rest);
 
+      if (isStaleRouteSave(saveScope.routeId)) {
+        return;
+      }
+
       setMapData((current) => {
         if (!current) {
           return current;
@@ -126,7 +156,7 @@ export function useRouteEditorData(routeId: string) {
       setDraftPoi(null);
       setMessage(result.source === "api" ? "POI 已保存到后端" : "POI 已保存到 mock 数据");
     } finally {
-      setSaving(false);
+      finishRouteSave(saveScope.requestId, saveScope.routeId);
     }
   }
 
@@ -135,13 +165,18 @@ export function useRouteEditorData(routeId: string) {
       return;
     }
 
-    setSaving(true);
+    const saveScope = startRouteSave(routeId);
     try {
       const savedSegments = await saveSegments(routeId, nextSegments);
+
+      if (isStaleRouteSave(saveScope.routeId)) {
+        return;
+      }
+
       setSegments(savedSegments);
       setMessage("赛段已保存到本地 mock 存储");
     } finally {
-      setSaving(false);
+      finishRouteSave(saveScope.requestId, saveScope.routeId);
     }
   }
 
@@ -150,9 +185,14 @@ export function useRouteEditorData(routeId: string) {
       return;
     }
 
-    setSaving(true);
+    const saveScope = startRouteSave(routeId);
     try {
       const result = await updateRouteGeometry(routeId, geometry);
+
+      if (isStaleRouteSave(saveScope.routeId)) {
+        return;
+      }
+
       setRoute(result.data);
       setMapData((current) => {
         if (!current) {
@@ -168,7 +208,7 @@ export function useRouteEditorData(routeId: string) {
         result.source === "api" ? "Geometry 已保存到后端" : "Geometry 已保存到 mock 数据",
       );
     } finally {
-      setSaving(false);
+      finishRouteSave(saveScope.requestId, saveScope.routeId);
     }
   }
 

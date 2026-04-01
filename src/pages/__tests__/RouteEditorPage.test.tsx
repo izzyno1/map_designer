@@ -6,6 +6,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as routeApi from "../../api/routes";
 import * as segmentApi from "../../api/segments";
@@ -323,5 +324,82 @@ describe("RouteEditorPage", () => {
     );
 
     expect(screen.getByText("Saving...")).toBeInTheDocument();
+  });
+
+  it("keeps the segment draft in sync when geometry insertion shifts indexes", async () => {
+    const user = userEvent.setup();
+    const geometry = {
+      type: "LineString" as const,
+      coordinates: [
+        { lat: 0, lng: 0, distanceKm: 0 },
+        { lat: 0, lng: 0.01, distanceKm: 5 },
+        { lat: 0, lng: 0.02, distanceKm: 10 },
+      ],
+    };
+
+    vi.spyOn(routeEditorHook, "useRouteEditorData").mockReturnValue({
+      route: {
+        id: "route-1",
+        name: "测试路线",
+        description: "desc",
+        geometry,
+      },
+      mapData: {
+        routeId: "route-1",
+        geometry,
+        pois: [],
+      },
+      segments: [
+        {
+          id: "segment-1",
+          routeId: "route-1",
+          name: "赛段 1",
+          type: "tempo",
+          startIndex: 1,
+          endIndex: 2,
+        },
+      ],
+      selected: { kind: "segment", id: "segment-1" },
+      selectedPoi: null,
+      selectedSegment: {
+        id: "segment-1",
+        routeId: "route-1",
+        name: "赛段 1",
+        type: "tempo",
+        startIndex: 1,
+        endIndex: 2,
+      },
+      draftPoi: null,
+      source: "mock",
+      loading: false,
+      saving: false,
+      message: null,
+      setDraftPoi: vi.fn(),
+      setMessage: vi.fn(),
+      setSelected: vi.fn(),
+      savePoiDraft: vi.fn(),
+      saveSegmentList: vi.fn(),
+      saveGeometry: vi.fn(),
+      startCreatePoi: vi.fn(),
+      selectPoi: vi.fn(),
+      selectSegment: vi.fn(),
+      selectGeometry: vi.fn(),
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/routes/route-1"]}>
+        <Routes>
+          <Route path="/routes/:routeId" element={<RouteEditorPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByLabelText("起点索引")).toHaveValue(1);
+    expect(screen.getByLabelText("终点索引")).toHaveValue(2);
+
+    await user.click(screen.getAllByRole("button", { name: "插入" })[0]);
+
+    expect(screen.getByLabelText("起点索引")).toHaveValue(2);
+    expect(screen.getByLabelText("终点索引")).toHaveValue(3);
   });
 });
