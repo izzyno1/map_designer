@@ -3,7 +3,8 @@ import type { SelectedAnnotation, Segment } from "../types/annotation";
 interface SegmentEditorPanelProps {
   selected: SelectedAnnotation;
   segments: Segment[];
-  onSave: (nextSegments: Segment[]) => void;
+  onSelect: (id: string) => void;
+  onChange: (nextSegments: Segment[]) => void;
 }
 
 function upsertSegment(list: Segment[], next: Segment) {
@@ -21,11 +22,20 @@ function toNumber(value: string) {
   return value === "" ? 0 : Number(value);
 }
 
-export function SegmentEditorPanel({ selected, segments, onSave }: SegmentEditorPanelProps) {
+export function SegmentEditorPanel({
+  selected,
+  segments,
+  onSelect,
+  onChange,
+}: SegmentEditorPanelProps) {
   const selectedSegment =
     selected.kind === "segment"
       ? segments.find((item) => item.id === selected.id) ?? null
       : null;
+
+  function upsertNext(next: Segment) {
+    return upsertSegment(segments, next);
+  }
 
   return (
     <section className="panel form-panel">
@@ -48,7 +58,8 @@ export function SegmentEditorPanel({ selected, segments, onSave }: SegmentEditor
             endIndex: 1,
           };
 
-          onSave(upsertSegment(segments, next));
+          onChange(upsertNext(next));
+          onSelect(next.id);
         }}
       >
         新增赛段
@@ -61,8 +72,8 @@ export function SegmentEditorPanel({ selected, segments, onSave }: SegmentEditor
             <input
               value={selectedSegment.name}
               onChange={(event) =>
-                onSave(
-                  upsertSegment(segments, {
+                onChange(
+                  upsertNext({
                     ...selectedSegment,
                     name: event.currentTarget.value,
                   }),
@@ -75,8 +86,8 @@ export function SegmentEditorPanel({ selected, segments, onSave }: SegmentEditor
             <select
               value={selectedSegment.type}
               onChange={(event) =>
-                onSave(
-                  upsertSegment(segments, {
+                onChange(
+                  upsertNext({
                     ...selectedSegment,
                     type: event.currentTarget.value as Segment["type"],
                   }),
@@ -94,8 +105,8 @@ export function SegmentEditorPanel({ selected, segments, onSave }: SegmentEditor
             <input
               value={selectedSegment.effort ?? ""}
               onChange={(event) =>
-                onSave(
-                  upsertSegment(segments, {
+                onChange(
+                  upsertNext({
                     ...selectedSegment,
                     effort: event.currentTarget.value,
                   }),
@@ -109,8 +120,8 @@ export function SegmentEditorPanel({ selected, segments, onSave }: SegmentEditor
               type="number"
               value={selectedSegment.startIndex ?? 0}
               onChange={(event) =>
-                onSave(
-                  upsertSegment(segments, {
+                onChange(
+                  upsertNext({
                     ...selectedSegment,
                     startIndex: toNumber(event.currentTarget.value),
                   }),
@@ -124,8 +135,8 @@ export function SegmentEditorPanel({ selected, segments, onSave }: SegmentEditor
               type="number"
               value={selectedSegment.endIndex ?? 0}
               onChange={(event) =>
-                onSave(
-                  upsertSegment(segments, {
+                onChange(
+                  upsertNext({
                     ...selectedSegment,
                     endIndex: toNumber(event.currentTarget.value),
                   }),

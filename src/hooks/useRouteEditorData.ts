@@ -22,7 +22,7 @@ function upsertPoi(list: Poi[], next: Poi) {
   return copy;
 }
 
-export function useRouteEditorData(routeId?: string) {
+export function useRouteEditorData(routeId: string) {
   const [route, setRoute] = useState<RouteDetail | null>(null);
   const [mapData, setMapData] = useState<RouteMapDataResponse | null>(null);
   const [segments, setSegments] = useState<Segment[]>([]);
@@ -57,7 +57,9 @@ export function useRouteEditorData(routeId?: string) {
         setRoute(routeDetail.data);
         setMapData(routeMapData.data);
         setSegments(nextSegments);
-        setSource(routeDetail.source === "api" || routeMapData.source === "api" ? "api" : "mock");
+        setSource(
+          routeDetail.source === "api" && routeMapData.source === "api" ? "api" : "mock",
+        );
         setSelected({ kind: "none" });
         setDraftPoi(null);
         setMessage(null);
@@ -122,10 +124,7 @@ export function useRouteEditorData(routeId?: string) {
       });
       setSelected({ kind: "poi", id: result.data.id });
       setDraftPoi(null);
-      setSource(result.source);
-      setMessage(
-        result.source === "api" ? "POI 已保存到 API" : "POI 已保存到本地 mock 存储",
-      );
+      setMessage(result.source === "api" ? "POI 已保存到后端" : "POI 已保存到 mock 数据");
     } finally {
       setSaving(false);
     }
@@ -165,11 +164,8 @@ export function useRouteEditorData(routeId?: string) {
           geometry,
         };
       });
-      setSource(result.source);
       setMessage(
-        result.source === "api"
-          ? "Geometry 已保存到 API"
-          : "Geometry 已保存到本地 mock 存储",
+        result.source === "api" ? "Geometry 已保存到后端" : "Geometry 已保存到 mock 数据",
       );
     } finally {
       setSaving(false);
@@ -220,6 +216,8 @@ export function useRouteEditorData(routeId?: string) {
     saving,
     message,
     setDraftPoi,
+    setMessage,
+    setSelected,
     savePoiDraft,
     saveSegmentList,
     saveGeometry,

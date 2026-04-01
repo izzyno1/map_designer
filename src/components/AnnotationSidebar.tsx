@@ -1,9 +1,10 @@
+import type { Poi } from "../types/route";
 import type { SelectedAnnotation, Segment } from "../types/annotation";
-import type { RouteDetail, RouteMapDataResponse } from "../types/route";
 
 interface AnnotationSidebarProps {
-  route: RouteDetail | null;
-  mapData: RouteMapDataResponse | null;
+  routeName?: string;
+  routeDescription?: string;
+  pois: Poi[];
   segments: Segment[];
   selected: SelectedAnnotation;
   onSelectPoi: (id: string) => void;
@@ -16,8 +17,9 @@ function getItemClass(isActive: boolean) {
 }
 
 export function AnnotationSidebar({
-  route,
-  mapData,
+  routeName,
+  routeDescription,
+  pois,
   segments,
   selected,
   onSelectPoi,
@@ -27,17 +29,17 @@ export function AnnotationSidebar({
   return (
     <aside className="panel editor-sidebar">
       <section className="editor-sidebar__route">
-        <h2>{route?.name ?? "路线编辑器"}</h2>
-        <p>{route?.description ?? "暂无路线描述。"}</p>
+        <h2>{routeName ?? "路线编辑器"}</h2>
+        <p>{routeDescription ?? "暂无路线描述。"}</p>
       </section>
 
       <section className="editor-sidebar__section">
         <div className="editor-sidebar__section-header">
           <h3>标注列表</h3>
         </div>
-        {mapData?.pois.length ? (
+        {pois.length ? (
           <div className="geometry-list">
-            {mapData.pois.map((poi) => (
+            {pois.map((poi) => (
               <button
                 key={poi.id}
                 type="button"
@@ -79,7 +81,7 @@ export function AnnotationSidebar({
 
       <section className="editor-sidebar__section">
         <div className="editor-sidebar__section-header">
-          <h3>Geometry</h3>
+          <h3>Geometry 列表</h3>
         </div>
         <button
           type="button"
