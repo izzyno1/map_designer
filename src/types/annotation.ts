@@ -1,16 +1,18 @@
+import type { Poi } from './route'
+
 export type Segment = {
   id: string
   routeId: string
   name: string
   type: 'climb' | 'flat' | 'tempo' | 'sprint'
-  effort: string
-  rank: string
-  best: string
-  pr: string
-  likes: number
-  riders: number
-  startIndex: number
-  endIndex: number
+  effort?: string
+  rank?: string
+  best?: string
+  pr?: string
+  likes?: number
+  riders?: number
+  startIndex?: number
+  endIndex?: number
 }
 
 export type SelectedAnnotation =
@@ -20,13 +22,4 @@ export type SelectedAnnotation =
   | { kind: 'new-poi' }
   | { kind: 'none' }
 
-export type DraftPoi = {
-  name: string
-  type: 'supply' | 'coffee' | 'repair' | 'meetup'
-  iconName: string
-  distanceLabel: string
-  description: string
-  tone: string
-  lat: number
-  lng: number
-}
+export type DraftPoi = Poi & { isNew?: boolean }

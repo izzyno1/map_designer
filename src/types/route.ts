@@ -1,15 +1,15 @@
 export type RouteSummary = {
   id: string
   name: string
-  distanceKm: number
-  updatedAt: string
-  status: 'draft' | 'review'
+  distanceKm?: number
+  updatedAt?: string
+  status?: string
 }
 
 export type RouteGeometryPoint = {
   lat: number
   lng: number
-  distanceKm: number | undefined
+  distanceKm?: number
 }
 
 export type RouteGeometry = {
@@ -21,20 +21,21 @@ export type Poi = {
   id: string
   name: string
   type: 'supply' | 'coffee' | 'repair' | 'meetup'
-  iconName: string
-  distanceLabel: string
-  description: string
-  tone: string
+  iconName?: string
+  distanceLabel?: string
+  description?: string
+  tone?: string
   lat: number
   lng: number
 }
 
 export type RouteDetail = RouteSummary & {
-  description: string
+  description?: string
   geometry: RouteGeometry
 }
 
 export type RouteMapDataResponse = {
-  route: RouteDetail
+  routeId: string
+  geometry: RouteGeometry
   pois: Poi[]
 }

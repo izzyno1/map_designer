@@ -3,7 +3,8 @@ import type { RouteMapDataResponse } from '../types/route'
 
 export const mockMapData: Record<string, RouteMapDataResponse> = {
   'sx-taiyuan-river-loop': {
-    route: mockRouteDetails['sx-taiyuan-river-loop'],
+    routeId: 'sx-taiyuan-river-loop',
+    geometry: mockRouteDetails['sx-taiyuan-river-loop'].geometry,
     pois: [
       {
         id: 'poi-1',
@@ -30,7 +31,8 @@ export const mockMapData: Record<string, RouteMapDataResponse> = {
     ],
   },
   'sx-jiexiu-ancient-city': {
-    route: mockRouteDetails['sx-jiexiu-ancient-city'],
+    routeId: 'sx-jiexiu-ancient-city',
+    geometry: mockRouteDetails['sx-jiexiu-ancient-city'].geometry,
     pois: [],
   },
 }

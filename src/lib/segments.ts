@@ -3,7 +3,7 @@ import type { RouteGeometryPoint } from '../types/route'
 export const isSegmentIndexRangeValid = (
   startIndex: number | undefined,
   endIndex: number | undefined,
-  length: number,
+  length = 0,
 ): boolean => {
   if (startIndex === undefined || endIndex === undefined) {
     return false
