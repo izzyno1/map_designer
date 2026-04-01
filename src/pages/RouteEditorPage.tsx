@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AnnotationSidebar } from "../components/AnnotationSidebar";
 import { AppShell } from "../components/AppShell";
@@ -12,20 +12,28 @@ import type { RouteGeometry } from "../types/route";
 export function RouteEditorPage() {
   const { routeId = "" } = useParams();
   const editor = useRouteEditorData(routeId);
-  const [geometryDraft, setGeometryDraft] = useState<RouteGeometry | null>(null);
-  const previousRouteIdRef = useRef(routeId);
+  const [geometryDraftState, setGeometryDraftState] = useState<{
+    routeId: string;
+    geometry: RouteGeometry | null;
+  }>({
+    routeId: "",
+    geometry: null,
+  });
+  const geometryDraft =
+    geometryDraftState.routeId === routeId ? geometryDraftState.geometry : null;
 
   useEffect(() => {
-    if (previousRouteIdRef.current !== routeId) {
-      previousRouteIdRef.current = routeId;
-      setGeometryDraft(null);
+    if (editor.mapData?.routeId !== routeId) {
       return;
     }
 
-    if (geometryDraft === null && editor.mapData?.geometry) {
-      setGeometryDraft(editor.mapData.geometry);
+    if (geometryDraftState.routeId !== routeId || geometryDraft === null) {
+      setGeometryDraftState({
+        routeId,
+        geometry: editor.mapData.geometry,
+      });
     }
-  }, [routeId, editor.mapData, geometryDraft]);
+  }, [routeId, editor.mapData, geometryDraftState.routeId, geometryDraft]);
 
   return (
     <AppShell title={editor.route?.name ?? "路线编辑器"} subtitle="左侧列表，中间地图，右侧属性编辑">
@@ -69,7 +77,12 @@ export function RouteEditorPage() {
               />
               <GeometryEditorPanel
                 geometry={geometryDraft}
-                onChange={setGeometryDraft}
+                onChange={(next) =>
+                  setGeometryDraftState({
+                    routeId,
+                    geometry: next,
+                  })
+                }
                 onSave={editor.saveGeometry}
               />
             </div>
