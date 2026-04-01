@@ -205,6 +205,39 @@ textarea {
   color: var(--muted);
 }
 
+.map-canvas {
+  padding: 0;
+  overflow: hidden;
+}
+
+.map-canvas__map {
+  height: 720px;
+  width: 100%;
+}
+
+.map-canvas__hint {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--muted);
+  background: #fafbfd;
+}
+
+.geometry-handle-icon {
+  display: grid;
+  place-items: center;
+}
+
+.geometry-handle-icon span {
+  width: 16px;
+  height: 16px;
+  display: block;
+  border-radius: 999px;
+  background: #c03221;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(23, 33, 43, 0.25);
+}
+
 .editor-panel-stack {
   display: grid;
   gap: 16px;

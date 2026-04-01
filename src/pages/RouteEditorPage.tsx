@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { AnnotationSidebar } from "../components/AnnotationSidebar";
 import { AppShell } from "../components/AppShell";
 import { GeometryEditorPanel } from "../components/GeometryEditorPanel";
+import { MapCanvas } from "../components/MapCanvas";
 import { PoiEditorPanel } from "../components/PoiEditorPanel";
 import { SegmentEditorPanel } from "../components/SegmentEditorPanel";
 import { StatusBanner } from "../components/StatusBanner";
@@ -58,17 +59,29 @@ export function RouteEditorPage() {
               onSelectSegment={editor.selectSegment}
               onSelectGeometry={editor.selectGeometry}
             />
-            <div className="panel editor-map-placeholder">
-              地图画布将在下个任务中接入 Leaflet。
-            </div>
-            <div className="editor-panel-stack">
-            <PoiEditorPanel
+            <MapCanvas
+              geometry={geometryDraft}
+              pois={editor.mapData?.pois ?? []}
+              segments={editor.segments}
               selected={editor.selected}
-              selectedPoi={editor.selectedPoi}
-              draftPoi={editor.draftPoi}
-              onChange={editor.setDraftPoi}
-              onSave={editor.savePoiDraft}
+              onMapClick={editor.startCreatePoi}
+              onPoiClick={editor.selectPoi}
+              onSegmentClick={editor.selectSegment}
+              onGeometryChange={(next) =>
+                setGeometryDraftState({
+                  routeId,
+                  geometry: next,
+                })
+              }
             />
+            <div className="editor-panel-stack">
+              <PoiEditorPanel
+                selected={editor.selected}
+                selectedPoi={editor.selectedPoi}
+                draftPoi={editor.draftPoi}
+                onChange={editor.setDraftPoi}
+                onSave={editor.savePoiDraft}
+              />
               <SegmentEditorPanel
                 selected={editor.selected}
                 segments={editor.segments}
