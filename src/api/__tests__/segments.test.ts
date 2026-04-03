@@ -17,7 +17,8 @@ describe("segment storage", () => {
     ]);
 
     const result = await getSegments("route-1");
-    expect(result).toHaveLength(1);
-    expect(result[0].name).toBe("测试赛段");
+    expect(result.source).toBe("mock");
+    expect(result.data).toHaveLength(1);
+    expect(result.data[0].name).toBe("测试赛段");
   });
 });

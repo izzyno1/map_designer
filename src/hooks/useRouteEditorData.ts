@@ -61,9 +61,13 @@ export function useRouteEditorData(routeId: string) {
 
         setRoute(routeDetail.data);
         setMapData(routeMapData.data);
-        setSegments(nextSegments);
+        setSegments(nextSegments.data);
         setSource(
-          routeDetail.source === "api" && routeMapData.source === "api" ? "api" : "mock",
+          routeDetail.source === "api" &&
+            routeMapData.source === "api" &&
+            nextSegments.source === "api"
+            ? "api"
+            : "mock",
         );
         setSelected({ kind: "none" });
         setDraftPoi(null);
@@ -173,8 +177,8 @@ export function useRouteEditorData(routeId: string) {
         return;
       }
 
-      setSegments(savedSegments);
-      setMessage("赛段已保存到本地演示数据");
+      setSegments(savedSegments.data);
+      setMessage(savedSegments.source === "api" ? "赛段已保存到后端" : "赛段已保存到演示数据");
     } finally {
       finishRouteSave(saveScope.requestId, saveScope.routeId);
     }

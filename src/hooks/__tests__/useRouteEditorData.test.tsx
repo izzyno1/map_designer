@@ -81,16 +81,19 @@ describe("useRouteEditorData", () => {
     {
       name: "saveSegmentList",
       mockSave: () => {
-        const resolveValue = [
-          {
-            id: "segment-a-1",
-            routeId: "route-a",
-            name: "A 赛段",
-            type: "tempo" as const,
-            startIndex: 1,
-            endIndex: 2,
-          },
-        ];
+        const resolveValue = {
+          source: "mock" as const,
+          data: [
+            {
+              id: "segment-a-1",
+              routeId: "route-a",
+              name: "A 赛段",
+              type: "tempo" as const,
+              startIndex: 1,
+              endIndex: 2,
+            },
+          ],
+        };
         const pending = deferred<typeof resolveValue>();
         vi.spyOn(segmentApi, "saveSegments").mockReturnValue(pending.promise);
         return { pending, resolveValue };
@@ -196,26 +199,32 @@ describe("useRouteEditorData", () => {
     );
     vi.spyOn(segmentApi, "getSegments").mockImplementation(async (routeId) =>
       routeId === "route-a"
-        ? [
-            {
-              id: "segment-a-1",
-              routeId: "route-a",
-              name: "A 赛段",
-              type: "tempo",
-              startIndex: 0,
-              endIndex: 1,
-            },
-          ]
-        : [
-            {
-              id: "segment-b-1",
-              routeId: "route-b",
-              name: "B 赛段",
-              type: "flat",
-              startIndex: 0,
-              endIndex: 1,
-            },
-          ],
+        ? {
+            source: "mock" as const,
+            data: [
+              {
+                id: "segment-a-1",
+                routeId: "route-a",
+                name: "A 赛段",
+                type: "tempo",
+                startIndex: 0,
+                endIndex: 1,
+              },
+            ],
+          }
+        : {
+            source: "mock" as const,
+            data: [
+              {
+                id: "segment-b-1",
+                routeId: "route-b",
+                name: "B 赛段",
+                type: "flat",
+                startIndex: 0,
+                endIndex: 1,
+              },
+            ],
+          },
     );
 
     const { pending, resolveValue } = mockSave();
@@ -250,5 +259,56 @@ describe("useRouteEditorData", () => {
       assertUnchanged(result.current);
       expect(result.current.saving).toBe(false);
     });
+  });
+
+  it("shows backend save message after saving segments through api", async () => {
+    const geometry = {
+      type: "LineString" as const,
+      coordinates: [
+        { lat: 10, lng: 20, distanceKm: 0 },
+        { lat: 11, lng: 21, distanceKm: 12 },
+      ],
+    };
+
+    vi.spyOn(routeApi, "getRouteDetail").mockResolvedValue(buildRouteDetail("route-a", geometry));
+    vi.spyOn(routeApi, "getRouteMapData").mockResolvedValue(buildMapData("route-a", geometry, []));
+    vi.spyOn(segmentApi, "getSegments").mockResolvedValue({
+      source: "mock",
+      data: [],
+    });
+    vi.spyOn(segmentApi, "saveSegments").mockResolvedValue({
+      source: "api",
+      data: [
+        {
+          id: "segment-a-1",
+          routeId: "route-a",
+          name: "A 赛段",
+          type: "tempo",
+          startIndex: 0,
+          endIndex: 1,
+        },
+      ],
+    });
+
+    const { result } = renderHook(() => useRouteEditorData("route-a"));
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.saveSegmentList([
+        {
+          id: "segment-a-1",
+          routeId: "route-a",
+          name: "A 赛段",
+          type: "tempo",
+          startIndex: 0,
+          endIndex: 1,
+        },
+      ]);
+    });
+
+    expect(result.current.message).toBe("赛段已保存到后端");
   });
 });

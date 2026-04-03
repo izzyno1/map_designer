@@ -53,7 +53,10 @@ describe("RouteEditorPage", () => {
         pois: [],
       },
     } as never);
-    vi.spyOn(segmentApi, "getSegments").mockResolvedValue([]);
+    vi.spyOn(segmentApi, "getSegments").mockResolvedValue({
+      source: "mock",
+      data: [],
+    });
 
     render(
       <MemoryRouter initialEntries={["/routes/route-1"]}>
@@ -324,6 +327,56 @@ describe("RouteEditorPage", () => {
     );
 
     expect(screen.getByText("保存中...")).toBeInTheDocument();
+  });
+
+  it("triggers json export for the current route", async () => {
+    const user = userEvent.setup();
+
+    vi.spyOn(routeApi, "downloadRouteExport").mockResolvedValue(undefined);
+    vi.spyOn(routeEditorHook, "useRouteEditorData").mockReturnValue({
+      route: {
+        id: "route-1",
+        name: "测试路线",
+        description: "desc",
+        geometry: { type: "LineString", coordinates: [] },
+      },
+      mapData: {
+        routeId: "route-1",
+        geometry: { type: "LineString", coordinates: [] },
+        pois: [],
+      },
+      segments: [],
+      selected: { kind: "none" },
+      selectedPoi: null,
+      selectedSegment: null,
+      draftPoi: null,
+      source: "mock",
+      loading: false,
+      saving: false,
+      message: null,
+      setDraftPoi: vi.fn(),
+      setMessage: vi.fn(),
+      setSelected: vi.fn(),
+      savePoiDraft: vi.fn(),
+      saveSegmentList: vi.fn(),
+      saveGeometry: vi.fn(),
+      startCreatePoi: vi.fn(),
+      selectPoi: vi.fn(),
+      selectSegment: vi.fn(),
+      selectGeometry: vi.fn(),
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/routes/route-1"]}>
+        <Routes>
+          <Route path="/routes/:routeId" element={<RouteEditorPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "导出 JSON" }));
+
+    expect(routeApi.downloadRouteExport).toHaveBeenCalledWith("route-1", "测试路线");
   });
 
   it("keeps the segment draft in sync when geometry insertion shifts indexes", async () => {

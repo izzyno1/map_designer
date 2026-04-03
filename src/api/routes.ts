@@ -2,7 +2,7 @@ import { mockMapData } from "../mock/map-data";
 import { mockRouteDetails, mockRouteSummaries } from "../mock/routes";
 import type { RouteDetail, RouteMapDataResponse, RouteSummary } from "../types/route";
 import type { ApiResult } from "./client";
-import { requestJson } from "./client";
+import { buildApiUrl, requestJson } from "./client";
 
 export async function getRouteList(): Promise<ApiResult<RouteSummary[]>> {
   try {
@@ -43,4 +43,22 @@ export async function updateRouteGeometry(routeId: string, geometry: RouteMapDat
     mockMapData[routeId] = { ...mockMapData[routeId], geometry };
     return { data: mockRouteDetails[routeId], source: "mock" as const };
   }
+}
+
+export async function downloadRouteExport(routeId: string, routeName: string) {
+  const response = await fetch(buildApiUrl(`/api/v1/routes/${routeId}/export`));
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  const safeName = routeName.replace(/[^\p{L}\p{N}_-]+/gu, "-");
+  anchor.href = url;
+  anchor.download = `${safeName || routeId}.json`;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  window.URL.revokeObjectURL(url);
 }

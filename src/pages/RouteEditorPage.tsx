@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { downloadRouteExport } from "../api/routes";
 import { AnnotationSidebar } from "../components/AnnotationSidebar";
 import { AppShell } from "../components/AppShell";
 import { GeometryEditorPanel } from "../components/GeometryEditorPanel";
@@ -93,11 +94,36 @@ export function RouteEditorPage() {
     await editor.saveGeometry(geometry);
   }
 
+  async function exportRouteJson() {
+    if (!editor.route) {
+      return;
+    }
+
+    try {
+      await downloadRouteExport(routeId, editor.route.name);
+      editor.setMessage("导出文件已开始下载");
+    } catch {
+      editor.setMessage("导出失败，请确认后端服务已启动");
+    }
+  }
+
   return (
     <AppShell
       title={editor.route?.name ?? "路线编辑器"}
       subtitle="左侧列表，中间地图，右侧属性编辑"
-      actions={<div className="toolbar-chip">{editor.saving ? "保存中..." : "可编辑"}</div>}
+      actions={
+        <div className="toolbar-actions">
+          <button
+            type="button"
+            className="toolbar-button"
+            onClick={() => void exportRouteJson()}
+            disabled={!editor.route || editor.loading}
+          >
+            导出 JSON
+          </button>
+          <div className="toolbar-chip">{editor.saving ? "保存中..." : "可编辑"}</div>
+        </div>
+      }
     >
       <div className="editor-page">
         <div className="editor-page__status">
