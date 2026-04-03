@@ -1,6 +1,11 @@
 import { mockMapData } from "../mock/map-data";
 import { mockRouteDetails, mockRouteSummaries } from "../mock/routes";
-import type { RouteDetail, RouteMapDataResponse, RouteSummary } from "../types/route";
+import type {
+  RouteDetail,
+  RouteGeometry,
+  RouteMapDataResponse,
+  RouteSummary,
+} from "../types/route";
 import type { ApiResult } from "./client";
 import { buildApiUrl, requestJson } from "./client";
 
@@ -43,6 +48,21 @@ export async function updateRouteGeometry(routeId: string, geometry: RouteMapDat
     mockMapData[routeId] = { ...mockMapData[routeId], geometry };
     return { data: mockRouteDetails[routeId], source: "mock" as const };
   }
+}
+
+export async function snapRouteGeometry(
+  routeId: string,
+  geometry: RouteGeometry,
+): Promise<ApiResult<RouteGeometry>> {
+  const data = await requestJson<{ geometry: RouteGeometry }>(
+    `/api/v1/routes/${routeId}/snap-geometry`,
+    {
+      method: "POST",
+      body: JSON.stringify({ geometry }),
+    },
+  );
+
+  return { data: data.geometry, source: "api" };
 }
 
 export async function downloadRouteExport(routeId: string, routeName: string) {

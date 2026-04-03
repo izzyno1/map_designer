@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { downloadRouteExport } from "../api/routes";
 import { AnnotationSidebar } from "../components/AnnotationSidebar";
@@ -10,6 +10,10 @@ import { SegmentEditorPanel } from "../components/SegmentEditorPanel";
 import { StatusBanner } from "../components/StatusBanner";
 import { useRouteEditorData } from "../hooks/useRouteEditorData";
 import { applyGeometryEdit } from "../lib/geometry";
+import {
+  getRouteGeometrySnapDisabledReason,
+  ROUTE_GEOMETRY_SNAP_MAX_POINTS,
+} from "../lib/constants";
 import type { Segment } from "../types/annotation";
 import type { RouteGeometry } from "../types/route";
 
@@ -25,6 +29,8 @@ export function RouteEditorPage() {
   });
   const geometryDraft =
     geometryDraftState.routeId === routeId ? geometryDraftState.geometry : null;
+  const activeRouteIdRef = useRef(routeId);
+  const draftRevisionRef = useRef(0);
   const [segmentDraftState, setSegmentDraftState] = useState<{
     routeId: string;
     segments: Segment[];
@@ -34,6 +40,16 @@ export function RouteEditorPage() {
   });
   const segmentDraft =
     segmentDraftState.routeId === routeId ? segmentDraftState.segments : editor.segments;
+  const currentGeometryDraft =
+    geometryDraft ?? (editor.mapData?.routeId === routeId ? editor.mapData.geometry : null);
+  const snapDisabledReason = getRouteGeometrySnapDisabledReason(
+    currentGeometryDraft?.coordinates.length ?? 0,
+  );
+  const snapLimitExceeded =
+    (currentGeometryDraft?.coordinates.length ?? 0) > ROUTE_GEOMETRY_SNAP_MAX_POINTS;
+  const canSnap = snapDisabledReason === null;
+
+  activeRouteIdRef.current = routeId;
 
   useEffect(() => {
     if (editor.mapData?.routeId !== routeId) {
@@ -62,6 +78,7 @@ export function RouteEditorPage() {
   }, [routeId, editor.route, editor.segments, segmentDraftState.routeId]);
 
   function updateGeometryDraft(nextGeometry: RouteGeometry) {
+    draftRevisionRef.current += 1;
     const previousGeometry =
       geometryDraft ?? (editor.mapData?.routeId === routeId ? editor.mapData.geometry : null);
     const nextSegments =
@@ -78,7 +95,39 @@ export function RouteEditorPage() {
     });
   }
 
+  async function snapCurrentGeometryDraft() {
+    if (!currentGeometryDraft || !canSnap) {
+      return;
+    }
+
+    const requestRouteId = routeId;
+    const requestRevision = draftRevisionRef.current;
+    const snappedGeometry = await editor.snapGeometryDraft(currentGeometryDraft);
+    if (
+      !snappedGeometry ||
+      activeRouteIdRef.current !== requestRouteId ||
+      draftRevisionRef.current !== requestRevision
+    ) {
+      return;
+    }
+
+    const nextSegments =
+      segmentDraftState.routeId === requestRouteId ? segmentDraftState.segments : editor.segments;
+    const appliedEdit = applyGeometryEdit(currentGeometryDraft, snappedGeometry, nextSegments);
+    draftRevisionRef.current += 1;
+
+    setGeometryDraftState({
+      routeId: requestRouteId,
+      geometry: appliedEdit.geometry,
+    });
+    setSegmentDraftState({
+      routeId: requestRouteId,
+      segments: appliedEdit.segments,
+    });
+  }
+
   function updateSegmentDraft(nextSegments: Segment[]) {
+    draftRevisionRef.current += 1;
     setSegmentDraftState({
       routeId,
       segments: nextSegments,
@@ -89,9 +138,24 @@ export function RouteEditorPage() {
   async function saveGeometryDraft(geometry: RouteGeometry) {
     const nextSegments =
       segmentDraftState.routeId === routeId ? segmentDraftState.segments : editor.segments;
+    const requestRouteId = routeId;
 
     await editor.saveSegmentList(nextSegments);
-    await editor.saveGeometry(geometry);
+    const savedGeometry = await editor.saveGeometry(geometry);
+    if (!savedGeometry || activeRouteIdRef.current !== requestRouteId) {
+      return;
+    }
+
+    draftRevisionRef.current += 1;
+    const appliedEdit = applyGeometryEdit(geometry, savedGeometry, nextSegments);
+    setGeometryDraftState({
+      routeId: requestRouteId,
+      geometry: savedGeometry,
+    });
+    setSegmentDraftState({
+      routeId: requestRouteId,
+      segments: appliedEdit.segments,
+    });
   }
 
   async function exportRouteJson() {
@@ -113,6 +177,18 @@ export function RouteEditorPage() {
       subtitle="左侧列表，中间地图，右侧属性编辑"
       actions={
         <div className="toolbar-actions">
+          <button
+            type="button"
+            className="toolbar-button"
+            onClick={() => void snapCurrentGeometryDraft()}
+            disabled={!currentGeometryDraft || !canSnap || editor.snapping || editor.loading}
+            title={snapDisabledReason ?? undefined}
+          >
+            {editor.snapping ? "贴路中..." : "一键贴路"}
+          </button>
+          {snapLimitExceeded ? (
+            <p className="geometry-hint toolbar-hint">{snapDisabledReason}</p>
+          ) : null}
           <button
             type="button"
             className="toolbar-button"
@@ -171,9 +247,11 @@ export function RouteEditorPage() {
                 onChange={updateSegmentDraft}
               />
               <GeometryEditorPanel
-                geometry={geometryDraft}
+                geometry={currentGeometryDraft}
                 onChange={updateGeometryDraft}
                 onSave={saveGeometryDraft}
+                onSnap={snapCurrentGeometryDraft}
+                snapping={editor.snapping}
               />
             </div>
           </section>

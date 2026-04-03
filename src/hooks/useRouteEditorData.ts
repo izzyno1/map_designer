@@ -3,6 +3,7 @@ import { createPoi, updatePoi } from "../api/pois";
 import {
   getRouteDetail,
   getRouteMapData,
+  snapRouteGeometry,
   updateRouteGeometry,
 } from "../api/routes";
 import { getSegments, saveSegments } from "../api/segments";
@@ -31,9 +32,11 @@ export function useRouteEditorData(routeId: string) {
   const [source, setSource] = useState<Source>("mock");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [snapping, setSnapping] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const activeRouteIdRef = useRef(routeId);
   const saveRequestIdRef = useRef(0);
+  const snapRequestIdRef = useRef(0);
 
   activeRouteIdRef.current = routeId;
 
@@ -47,6 +50,7 @@ export function useRouteEditorData(routeId: string) {
 
     setLoading(true);
     setSaving(false);
+    setSnapping(false);
     void (async () => {
       try {
         const [routeDetail, routeMapData, nextSegments] = await Promise.all([
@@ -92,8 +96,11 @@ export function useRouteEditorData(routeId: string) {
     return { requestId, routeId: requestRouteId };
   }
 
-  function isStaleRouteSave(requestRouteId: string) {
-    return activeRouteIdRef.current !== requestRouteId;
+  function isStaleRouteSave(scope: { requestId: number; routeId: string }) {
+    return (
+      activeRouteIdRef.current !== scope.routeId ||
+      saveRequestIdRef.current !== scope.requestId
+    );
   }
 
   function finishRouteSave(requestId: number, requestRouteId: string) {
@@ -102,6 +109,27 @@ export function useRouteEditorData(routeId: string) {
       saveRequestIdRef.current === requestId
     ) {
       setSaving(false);
+    }
+  }
+
+  function startRouteSnap(requestRouteId: string) {
+    const requestId = snapRequestIdRef.current + 1;
+    snapRequestIdRef.current = requestId;
+    setSnapping(true);
+
+    return { requestId, routeId: requestRouteId };
+  }
+
+  function isStaleRouteSnap(scope: { requestId: number; routeId: string }) {
+    return (
+      activeRouteIdRef.current !== scope.routeId ||
+      snapRequestIdRef.current !== scope.requestId
+    );
+  }
+
+  function finishRouteSnap(requestId: number, requestRouteId: string) {
+    if (activeRouteIdRef.current === requestRouteId && snapRequestIdRef.current === requestId) {
+      setSnapping(false);
     }
   }
 
@@ -142,7 +170,7 @@ export function useRouteEditorData(routeId: string) {
           })
         : await updatePoi(routeId, input.id, rest);
 
-      if (isStaleRouteSave(saveScope.routeId)) {
+      if (isStaleRouteSave(saveScope)) {
         return;
       }
 
@@ -173,7 +201,7 @@ export function useRouteEditorData(routeId: string) {
     try {
       const savedSegments = await saveSegments(routeId, nextSegments);
 
-      if (isStaleRouteSave(saveScope.routeId)) {
+      if (isStaleRouteSave(saveScope)) {
         return;
       }
 
@@ -184,17 +212,17 @@ export function useRouteEditorData(routeId: string) {
     }
   }
 
-  async function saveGeometry(geometry: RouteGeometry) {
+  async function saveGeometry(geometry: RouteGeometry): Promise<RouteGeometry | null> {
     if (!routeId) {
-      return;
+      return null;
     }
 
     const saveScope = startRouteSave(routeId);
     try {
       const result = await updateRouteGeometry(routeId, geometry);
 
-      if (isStaleRouteSave(saveScope.routeId)) {
-        return;
+      if (isStaleRouteSave(saveScope)) {
+        return null;
       }
 
       setRoute(result.data);
@@ -205,14 +233,46 @@ export function useRouteEditorData(routeId: string) {
 
         return {
           ...current,
-          geometry,
+          geometry: result.data.geometry,
         };
       });
       setMessage(
         result.source === "api" ? "路线坐标已保存到后端" : "路线坐标已保存到演示数据",
       );
+      return result.data.geometry;
     } finally {
       finishRouteSave(saveScope.requestId, saveScope.routeId);
+    }
+  }
+
+  async function snapGeometryDraft(geometry: RouteGeometry) {
+    if (!routeId) {
+      return null;
+    }
+
+    if (geometry.coordinates.length < 2) {
+      setMessage("至少需要两个坐标点");
+      return null;
+    }
+
+    const snapScope = startRouteSnap(routeId);
+    try {
+      const result = await snapRouteGeometry(routeId, geometry);
+
+      if (isStaleRouteSnap(snapScope)) {
+        return null;
+      }
+
+      setMessage("已生成道路贴合结果，请确认后保存");
+      return result.data;
+    } catch {
+      if (activeRouteIdRef.current === snapScope.routeId) {
+        setMessage("道路贴合失败，请稍后重试");
+      }
+
+      return null;
+    } finally {
+      finishRouteSnap(snapScope.requestId, snapScope.routeId);
     }
   }
 
@@ -258,6 +318,7 @@ export function useRouteEditorData(routeId: string) {
     source,
     loading,
     saving,
+    snapping,
     message,
     setDraftPoi,
     setMessage,
@@ -265,6 +326,7 @@ export function useRouteEditorData(routeId: string) {
     savePoiDraft,
     saveSegmentList,
     saveGeometry,
+    snapGeometryDraft,
     startCreatePoi,
     selectPoi,
     selectSegment,

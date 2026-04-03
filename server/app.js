@@ -2,11 +2,48 @@ import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createStore } from "./db.js";
+import { isValidRouteGeometry, isValidSnapGeometry, snapGeometry } from "./services/snap-geometry.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_DB_PATH = path.resolve(__dirname, "../data/map-designer.sqlite");
 
-export function createApp({ dbPath = DEFAULT_DB_PATH } = {}) {
+function isFiniteNumber(value) {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function isValidLatitude(value) {
+  return isFiniteNumber(value) && value >= -90 && value <= 90;
+}
+
+function isValidLongitude(value) {
+  return isFiniteNumber(value) && value >= -180 && value <= 180;
+}
+
+function isNonEmptyString(value) {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isValidPoiCoordinates(payload) {
+  return isValidLatitude(payload.lat) && isValidLongitude(payload.lng);
+}
+
+function isValidPoiUpdate(payload) {
+  if (payload.name !== undefined && !isNonEmptyString(payload.name)) {
+    return false;
+  }
+
+  if (payload.lat !== undefined && !isValidLatitude(payload.lat)) {
+    return false;
+  }
+
+  if (payload.lng !== undefined && !isValidLongitude(payload.lng)) {
+    return false;
+  }
+
+  return true;
+}
+
+export function createApp({ dbPath = DEFAULT_DB_PATH, fetchImpl = globalThis.fetch } = {}) {
   const app = express();
   const store = createStore({ dbPath });
 
@@ -42,7 +79,7 @@ export function createApp({ dbPath = DEFAULT_DB_PATH } = {}) {
 
   app.patch("/api/v1/routes/:routeId/geometry", (request, response) => {
     const { geometry } = request.body ?? {};
-    if (!geometry || !Array.isArray(geometry.coordinates)) {
+    if (!isValidRouteGeometry(geometry)) {
       response.status(400).json({ message: "Invalid geometry payload" });
       return;
     }
@@ -56,6 +93,31 @@ export function createApp({ dbPath = DEFAULT_DB_PATH } = {}) {
     response.json(route);
   });
 
+  app.post("/api/v1/routes/:routeId/snap-geometry", async (request, response) => {
+    const route = store.getRoute(request.params.routeId);
+    if (!route) {
+      response.status(404).json({ message: "Route not found" });
+      return;
+    }
+
+    const { geometry } = request.body ?? {};
+    if (!isValidSnapGeometry(geometry)) {
+      response.status(400).json({ message: "Invalid geometry payload" });
+      return;
+    }
+
+    try {
+      const result = await snapGeometry({ geometry, fetchImpl });
+      response.json(result);
+    } catch (error) {
+      console.info("[snap-geometry] failed", {
+        routeId: request.params.routeId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      response.status(502).json({ message: "Failed to snap route geometry" });
+    }
+  });
+
   app.post("/api/v1/routes/:routeId/pois", (request, response) => {
     const route = store.getRoute(request.params.routeId);
     if (!route) {
@@ -64,7 +126,7 @@ export function createApp({ dbPath = DEFAULT_DB_PATH } = {}) {
     }
 
     const { name, lat, lng } = request.body ?? {};
-    if (!name || typeof lat !== "number" || typeof lng !== "number") {
+    if (!isNonEmptyString(name) || !isValidPoiCoordinates({ lat, lng })) {
       response.status(400).json({ message: "Invalid poi payload" });
       return;
     }
@@ -74,7 +136,13 @@ export function createApp({ dbPath = DEFAULT_DB_PATH } = {}) {
   });
 
   app.patch("/api/v1/routes/:routeId/pois/:poiId", (request, response) => {
-    const poi = store.updatePoi(request.params.routeId, request.params.poiId, request.body ?? {});
+    const payload = request.body ?? {};
+    if (!isValidPoiUpdate(payload)) {
+      response.status(400).json({ message: "Invalid poi payload" });
+      return;
+    }
+
+    const poi = store.updatePoi(request.params.routeId, request.params.poiId, payload);
     if (!poi) {
       response.status(404).json({ message: "Poi not found" });
       return;

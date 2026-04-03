@@ -98,6 +98,18 @@ VITE_API_BASE_URL=http://localhost:3000
 - `PUT /api/v1/routes/:routeId/segments`
 - `GET /api/v1/routes/:routeId/export`
 
+### 一键贴路
+
+路线编辑器里的“一键贴路”会把当前路线的 geometry 贴合到道路网络上。前端通过 `POST /api/v1/routes/:routeId/snap-geometry` 发起请求，后端默认调用在线 OSRM 服务完成贴路。
+
+如果需要切换到自建或本地的 OSRM 服务，可以通过环境变量 `OSRM_BASE_URL` 覆盖默认地址，例如：
+
+```bash
+OSRM_BASE_URL=http://127.0.0.1:5000
+```
+
+贴路操作只会更新草稿中的路线 geometry，不会自动保存到数据库；完成贴路后，仍然需要手动点击保存。
+
 `GET /api/v1/routes/:routeId/export` 会下载自定义 JSON 文件，结构如下：
 
 ```json
