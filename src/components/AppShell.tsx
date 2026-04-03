@@ -14,7 +14,7 @@ export function AppShell({ title, subtitle, actions, children }: AppShellProps) 
       <header className="app-shell__header">
         <div>
           <Link className="app-shell__crumb" to="/">
-            骑行路线标注后台
+            地图标注工具
           </Link>
           <h1>{title}</h1>
           {subtitle ? <p>{subtitle}</p> : null}

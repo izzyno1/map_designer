@@ -336,3 +336,30 @@ textarea {
   font-size: 13px;
   font-weight: 700;
 }
+
+.danger-button {
+  border: 1px solid #efc0ba;
+  background: #fff1ef;
+  color: var(--danger);
+}
+
+.draft-entry {
+  max-width: 680px;
+  display: grid;
+  gap: 16px;
+}
+
+.draft-entry h2 {
+  margin: 0;
+}
+
+.draft-entry p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.draft-entry__button {
+  display: inline-flex;
+  width: fit-content;
+  text-decoration: none;
+}
