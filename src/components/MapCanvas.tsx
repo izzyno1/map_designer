@@ -139,7 +139,7 @@ export function MapCanvas({
           : null}
       </MapContainer>
       <div className="map-canvas__hint">
-        点击地图可新增 POI；切换到 Geometry 后可拖拽节点改线，也可点击节点在其后插入新点，再用右侧面板继续调整坐标。
+        点击地图可新增标注点；切换到路线坐标后可拖拽节点改线，也可点击节点在其后插入新点，再用右侧面板继续调整坐标。
       </div>
     </div>
   );

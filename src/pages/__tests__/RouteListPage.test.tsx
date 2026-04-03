@@ -22,6 +22,7 @@ describe("RouteListPage", () => {
     render(React.createElement(MemoryRouter, null, React.createElement(RouteListPage)));
 
     expect(await screen.findByText("测试路线")).toBeInTheDocument();
-    expect(screen.getByText("88.8 km")).toBeInTheDocument();
+    expect(screen.getByText("88.8 公里")).toBeInTheDocument();
+    expect(screen.getByText("状态：草稿")).toBeInTheDocument();
   });
 });

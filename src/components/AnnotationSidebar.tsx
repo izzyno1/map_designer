@@ -51,7 +51,7 @@ export function AnnotationSidebar({
             ))}
           </div>
         ) : (
-          <p>暂无 POI。</p>
+          <p>暂无标注点。</p>
         )}
       </section>
 
@@ -81,7 +81,7 @@ export function AnnotationSidebar({
 
       <section className="editor-sidebar__section">
         <div className="editor-sidebar__section-header">
-          <h3>Geometry</h3>
+          <h3>路线坐标</h3>
         </div>
         <button
           type="button"

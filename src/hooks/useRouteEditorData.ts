@@ -154,7 +154,7 @@ export function useRouteEditorData(routeId: string) {
       });
       setSelected({ kind: "poi", id: result.data.id });
       setDraftPoi(null);
-      setMessage(result.source === "api" ? "POI 已保存到后端" : "POI 已保存到 mock 数据");
+      setMessage(result.source === "api" ? "标注点已保存到后端" : "标注点已保存到演示数据");
     } finally {
       finishRouteSave(saveScope.requestId, saveScope.routeId);
     }
@@ -174,7 +174,7 @@ export function useRouteEditorData(routeId: string) {
       }
 
       setSegments(savedSegments);
-      setMessage("赛段已保存到本地 mock 存储");
+      setMessage("赛段已保存到本地演示数据");
     } finally {
       finishRouteSave(saveScope.requestId, saveScope.routeId);
     }
@@ -205,7 +205,7 @@ export function useRouteEditorData(routeId: string) {
         };
       });
       setMessage(
-        result.source === "api" ? "Geometry 已保存到后端" : "Geometry 已保存到 mock 数据",
+        result.source === "api" ? "路线坐标已保存到后端" : "路线坐标已保存到演示数据",
       );
     } finally {
       finishRouteSave(saveScope.requestId, saveScope.routeId);

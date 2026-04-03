@@ -96,14 +96,14 @@ export function SegmentEditorPanel({
                 )
               }
             >
-              <option value="climb">climb</option>
-              <option value="flat">flat</option>
-              <option value="tempo">tempo</option>
-              <option value="sprint">sprint</option>
+              <option value="climb">爬坡</option>
+              <option value="flat">平路</option>
+              <option value="tempo">节奏</option>
+              <option value="sprint">冲刺</option>
             </select>
           </label>
           <label>
-            effort
+            强度文案
             <input
               value={selectedSegment.effort ?? ""}
               onChange={(event) =>
@@ -117,7 +117,7 @@ export function SegmentEditorPanel({
             />
           </label>
           <label>
-            rank
+            排名
             <input
               value={selectedSegment.rank ?? ""}
               onChange={(event) =>
@@ -131,7 +131,7 @@ export function SegmentEditorPanel({
             />
           </label>
           <label>
-            best
+            最佳成绩
             <input
               value={selectedSegment.best ?? ""}
               onChange={(event) =>
@@ -145,7 +145,7 @@ export function SegmentEditorPanel({
             />
           </label>
           <label>
-            pr
+            个人纪录
             <input
               value={selectedSegment.pr ?? ""}
               onChange={(event) =>
@@ -159,7 +159,7 @@ export function SegmentEditorPanel({
             />
           </label>
           <label>
-            likes
+            点赞数
             <input
               type="number"
               value={selectedSegment.likes ?? 0}
@@ -174,7 +174,7 @@ export function SegmentEditorPanel({
             />
           </label>
           <label>
-            riders
+            骑行人数
             <input
               type="number"
               value={selectedSegment.riders ?? 0}

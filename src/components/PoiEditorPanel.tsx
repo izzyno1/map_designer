@@ -17,19 +17,21 @@ export function PoiEditorPanel({
   onSave,
 }: PoiEditorPanelProps) {
   const value: DraftPoi | null = draftPoi ?? (selectedPoi ? ({ ...selectedPoi } as DraftPoi) : null);
+  const positionLabel =
+    value ? `${value.lat.toFixed(6)}, ${value.lng.toFixed(6)}` : "";
 
   if (!value) {
     return (
       <section className="panel form-panel">
-        <h2>POI 编辑</h2>
-        <p>点击地图新增补给点，或从左侧列表选择已有 POI。</p>
+        <h2>标注点编辑</h2>
+        <p>点击地图新增标注点，或从左侧列表选择已有标注点。</p>
       </section>
     );
   }
 
   return (
     <section className="panel form-panel">
-      <h2>{selected.kind === "new-poi" ? "新建 POI" : "POI 编辑"}</h2>
+      <h2>{selected.kind === "new-poi" ? "新建标注点" : "标注点编辑"}</h2>
       <label>
         名称
         <input
@@ -38,42 +40,14 @@ export function PoiEditorPanel({
         />
       </label>
       <label>
-        类型
-        <select
-          value={value.type}
-          onChange={(event) =>
-            onChange({
-              ...value,
-              type: event.currentTarget.value as Poi["type"],
-            })
-          }
-        >
-          <option value="supply">supply</option>
-          <option value="coffee">coffee</option>
-          <option value="repair">repair</option>
-          <option value="meetup">meetup</option>
-        </select>
-      </label>
-      <label>
-        图标名
+        位置
         <input
-          value={value.iconName ?? ""}
-          onChange={(event) =>
-            onChange({ ...value, iconName: event.currentTarget.value })
-          }
+          value={positionLabel}
+          readOnly
         />
       </label>
       <label>
-        距离文案
-        <input
-          value={value.distanceLabel ?? ""}
-          onChange={(event) =>
-            onChange({ ...value, distanceLabel: event.currentTarget.value })
-          }
-        />
-      </label>
-      <label>
-        描述
+        备注
         <textarea
           rows={4}
           value={value.description ?? ""}
@@ -82,15 +56,8 @@ export function PoiEditorPanel({
           }
         />
       </label>
-      <label>
-        备注 tone
-        <input
-          value={value.tone ?? ""}
-          onChange={(event) => onChange({ ...value, tone: event.currentTarget.value })}
-        />
-      </label>
       <button type="button" onClick={() => onSave(value)}>
-        保存 POI
+        保存标注点
       </button>
       <button type="button" disabled>
         删除按钮（未启用）

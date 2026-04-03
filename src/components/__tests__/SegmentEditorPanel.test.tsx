@@ -90,13 +90,13 @@ describe("SegmentEditorPanel", () => {
       </MemoryRouter>,
     );
 
-    await user.type(screen.getByLabelText("rank"), "A");
-    await user.type(screen.getByLabelText("best"), "1:23:45");
-    await user.type(screen.getByLabelText("pr"), "1:20:10");
-    await user.clear(screen.getByLabelText("likes"));
-    await user.type(screen.getByLabelText("likes"), "18");
-    await user.clear(screen.getByLabelText("riders"));
-    await user.type(screen.getByLabelText("riders"), "42");
+    await user.type(screen.getByLabelText("排名"), "A");
+    await user.type(screen.getByLabelText("最佳成绩"), "1:23:45");
+    await user.type(screen.getByLabelText("个人纪录"), "1:20:10");
+    await user.clear(screen.getByLabelText("点赞数"));
+    await user.type(screen.getByLabelText("点赞数"), "18");
+    await user.clear(screen.getByLabelText("骑行人数"));
+    await user.type(screen.getByLabelText("骑行人数"), "42");
 
     expect(onChange).toHaveBeenCalled();
     expect(onChange.mock.calls.at(-1)?.[0][0]).toMatchObject({

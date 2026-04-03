@@ -5,6 +5,17 @@ import { AppShell } from "../components/AppShell";
 import { StatusBanner } from "../components/StatusBanner";
 import type { RouteSummary } from "../types/route";
 
+function getRouteStatusLabel(status?: string) {
+  switch (status) {
+    case "draft":
+      return "草稿";
+    case "review":
+      return "待审核";
+    default:
+      return "未知";
+  }
+}
+
 export function RouteListPage() {
   const [routes, setRoutes] = useState<RouteSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +40,7 @@ export function RouteListPage() {
     <AppShell title="路线列表" subtitle="选择一条路线进入地图标注编辑器">
       <section className="route-list-page">
         <StatusBanner tone={source === "api" ? "success" : "warning"}>
-          {source === "api" ? "Connected to API" : "Fallback mock mode"}
+          {source === "api" ? "已连接后端接口" : "当前使用本地演示数据"}
         </StatusBanner>
         {error ? <StatusBanner tone="danger">{error}</StatusBanner> : null}
         {loading ? <div className="panel">正在加载路线...</div> : null}
@@ -38,8 +49,8 @@ export function RouteListPage() {
             {routes.map((route) => (
               <Link key={route.id} className="route-card" to={`/routes/${route.id}`}>
                 <div className="route-card__title">{route.name}</div>
-                <div className="route-card__meta">{route.distanceKm?.toFixed(1)} km</div>
-                <div className="route-card__meta">状态：{route.status ?? "unknown"}</div>
+                <div className="route-card__meta">{route.distanceKm?.toFixed(1)} 公里</div>
+                <div className="route-card__meta">状态：{getRouteStatusLabel(route.status)}</div>
               </Link>
             ))}
           </div>

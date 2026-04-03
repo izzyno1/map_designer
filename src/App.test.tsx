@@ -13,7 +13,7 @@ describe("app shell", () => {
         {
           path: "/",
           element: <App />,
-          children: [{ index: true, element: <div>Loading app shell...</div> }],
+          children: [{ index: true, element: <div>正在加载应用外壳...</div> }],
         },
       ],
       { initialEntries: ["/"] },
@@ -21,6 +21,6 @@ describe("app shell", () => {
 
     render(<RouterProvider router={router} />);
 
-    expect(screen.getByText("Loading app shell...")).toBeInTheDocument();
+    expect(screen.getByText("正在加载应用外壳...")).toBeInTheDocument();
   });
 });

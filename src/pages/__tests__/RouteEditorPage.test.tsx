@@ -65,7 +65,7 @@ describe("RouteEditorPage", () => {
 
     expect(await screen.findByText("标注列表")).toBeInTheDocument();
     expect(screen.getByText("赛段")).toBeInTheDocument();
-    expect(screen.getAllByRole("heading", { name: "Geometry" })).toHaveLength(2);
+    expect(screen.getAllByRole("heading", { name: "路线坐标" })).toHaveLength(2);
   });
 
   it("preserves in-progress geometry edits when unrelated map data updates", () => {
@@ -250,7 +250,7 @@ describe("RouteEditorPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "切换路线" }));
 
-    expect(screen.getByText("当前没有 geometry 数据。")).toBeInTheDocument();
+    expect(screen.getByText("当前没有路线坐标数据。")).toBeInTheDocument();
 
     routeTwoLoaded = true;
     view.rerender(
@@ -308,7 +308,7 @@ describe("RouteEditorPage", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("Ready")).toBeInTheDocument();
+    expect(screen.getByText("可编辑")).toBeInTheDocument();
 
     editorState = {
       ...editorState,
@@ -323,7 +323,7 @@ describe("RouteEditorPage", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("Saving...")).toBeInTheDocument();
+    expect(screen.getByText("保存中...")).toBeInTheDocument();
   });
 
   it("keeps the segment draft in sync when geometry insertion shifts indexes", async () => {

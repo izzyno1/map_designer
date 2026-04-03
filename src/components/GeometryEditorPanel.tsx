@@ -14,15 +14,15 @@ export function GeometryEditorPanel({ geometry, onChange, onSave }: GeometryEdit
   if (!geometry) {
     return (
       <section className="panel form-panel">
-        <h2>Geometry</h2>
-        <p>当前没有 geometry 数据。</p>
+        <h2>路线坐标</h2>
+        <p>当前没有路线坐标数据。</p>
       </section>
     );
   }
 
   return (
     <section className="panel form-panel">
-      <h2>Geometry</h2>
+      <h2>路线坐标</h2>
       <div className="geometry-list">
         {geometry.coordinates.map((point, index) => (
           <div key={`${index}-${point.lat}-${point.lng}`} className="geometry-row geometry-row--wide">
@@ -76,7 +76,7 @@ export function GeometryEditorPanel({ geometry, onChange, onSave }: GeometryEdit
         ))}
       </div>
       <button type="button" onClick={() => onSave(geometry)}>
-        保存 Geometry
+        保存路线坐标
       </button>
     </section>
   );

@@ -97,12 +97,12 @@ export function RouteEditorPage() {
     <AppShell
       title={editor.route?.name ?? "路线编辑器"}
       subtitle="左侧列表，中间地图，右侧属性编辑"
-      actions={<div className="toolbar-chip">{editor.saving ? "Saving..." : "Ready"}</div>}
+      actions={<div className="toolbar-chip">{editor.saving ? "保存中..." : "可编辑"}</div>}
     >
       <div className="editor-page">
         <div className="editor-page__status">
           <StatusBanner tone={editor.source === "api" ? "success" : "warning"}>
-            {editor.source === "api" ? "Connected to API" : "Fallback mock mode"}
+            {editor.source === "api" ? "已连接后端接口" : "当前使用本地演示数据"}
           </StatusBanner>
           {editor.message ? <StatusBanner tone="neutral">{editor.message}</StatusBanner> : null}
         </div>
